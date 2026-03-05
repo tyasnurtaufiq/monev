@@ -1,19 +1,19 @@
 <template>
-  <div class="flex h-screen bg-gray-50">
-    <Sidebar />
+  <div class="flex h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
+    <Sidebar v-model="sidebarOpen" />
     
     <div class="flex-1 flex flex-col overflow-hidden">
-      <Header />
+      <Header @toggle-sidebar="sidebarOpen = !sidebarOpen" />
       
-      <main class="flex-1 overflow-y-auto p-6">
+      <main class="flex-1 overflow-y-auto p-3 lg:p-6">
         <div class="max-w-6xl mx-auto">
           <!-- Page Header -->
-          <div class="flex items-center justify-between mb-8">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-3">
             <div>
-              <h1 class="text-2xl font-bold text-gray-900">Data Kegiatan</h1>
-              <p class="text-gray-500 mt-1">Kelola program, kegiatan, sub kegiatan, dan output</p>
+              <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Data Kegiatan</h1>
+              <p class="text-gray-500 dark:text-gray-400 mt-1">Kelola program, kegiatan, sub kegiatan, dan output</p>
             </div>
-            <button @click="openAddModal" class="btn-accent flex items-center gap-2">
+            <button @click="openAddModal" class="btn-accent flex items-center gap-2 self-start sm:self-auto">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
               </svg>
@@ -22,7 +22,7 @@
           </div>
 
           <!-- Tahun + Level Selector -->
-          <div class="card p-4 mb-6">
+          <div class="card dark:bg-gray-800 dark:border-gray-700 p-4 mb-6">
             <div class="flex flex-wrap items-center gap-4">
               <select v-model="selectedTahunId" @change="onTahunChange" class="input-field w-auto">
                 <option v-for="t in monevStore.tahunList" :key="t.id" :value="t.id">{{ t.tahun }}</option>
@@ -64,32 +64,33 @@
           </div>
 
           <!-- Data Table -->
-          <div class="card overflow-hidden">
+          <div class="card dark:bg-gray-800 dark:border-gray-700 overflow-hidden">
+            <div class="overflow-x-auto">
             <table class="w-full">
-              <thead class="bg-gray-50 border-b border-gray-100">
+              <thead class="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700">
                 <tr>
-                  <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Kode</th>
-                  <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Nama</th>
-                  <th v-if="currentLevel === 'output'" class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Pagu</th>
-                  <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Parent</th>
-                  <th class="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase">Aksi</th>
+                  <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Kode</th>
+                  <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Nama</th>
+                  <th v-if="currentLevel === 'output'" class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Pagu</th>
+                  <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Parent</th>
+                  <th class="px-6 py-4 text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-gray-100">
+              <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
                 <tr 
                   v-for="item in tableData" :key="item.id"
-                  class="hover:bg-gray-50 transition-colors"
+                  class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
                 >
                   <td class="px-6 py-4">
-                    <span class="text-sm font-mono text-purple-600 bg-purple-50 px-2 py-0.5 rounded">{{ item.kode || '-' }}</span>
+                    <span class="text-sm font-mono text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/30 px-2 py-0.5 rounded">{{ item.kode || '-' }}</span>
                   </td>
                   <td class="px-6 py-4">
-                    <p class="font-medium text-gray-900">{{ item.nama }}</p>
+                    <p class="font-medium text-gray-900 dark:text-gray-100">{{ item.nama }}</p>
                   </td>
-                  <td v-if="currentLevel === 'output'" class="px-6 py-4 text-sm text-gray-600">
+                  <td v-if="currentLevel === 'output'" class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
                     {{ formatCurrency(item.pagu) }}
                   </td>
-                  <td class="px-6 py-4 text-sm text-gray-500">{{ item.parentName || '-' }}</td>
+                  <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{{ item.parentName || '-' }}</td>
                   <td class="px-6 py-4">
                     <div class="flex items-center justify-center gap-2">
                       <button @click="openEditModal(item)" class="p-2 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors">
@@ -107,6 +108,7 @@
                 </tr>
               </tbody>
             </table>
+            </div>
 
             <div v-if="tableData.length === 0" class="text-center py-12">
               <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -124,8 +126,8 @@
     <Teleport to="body">
       <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showModal = false"></div>
-        <div class="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden">
-          <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+        <div class="relative w-full max-w-lg bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden">
+          <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
             <h3 class="text-lg font-bold text-gray-900">
               {{ editingItem ? 'Edit' : 'Tambah' }} {{ levelLabel }}
             </h3>
@@ -245,6 +247,8 @@ import Header from '../components/layout/Header.vue'
 
 const route = useRoute()
 const monevStore = useMonevStore()
+
+const sidebarOpen = ref(false)
 
 const levels = [
   { key: 'program', label: 'Program' },

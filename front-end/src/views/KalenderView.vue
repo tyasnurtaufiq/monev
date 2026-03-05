@@ -1,21 +1,21 @@
 <template>
-  <div class="flex h-screen bg-gray-50">
-    <Sidebar />
+  <div class="flex h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
+    <Sidebar v-model="sidebarOpen" />
     
     <div class="flex-1 flex flex-col overflow-hidden">
-      <Header />
+      <Header @toggle-sidebar="sidebarOpen = !sidebarOpen" />
       
-      <main class="flex-1 overflow-y-auto p-6">
+      <main class="flex-1 overflow-y-auto p-3 lg:p-6">
         <div class="max-w-4xl mx-auto">
-          <div class="flex items-center justify-between mb-8">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-3">
             <div>
-              <h1 class="text-2xl font-bold text-gray-900">Kalender Monitoring</h1>
-              <p class="text-gray-500 mt-1">Lihat progress monitoring dan event per bulan</p>
+              <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Kalender Monitoring</h1>
+              <p class="text-gray-500 dark:text-gray-400 mt-1">Lihat progress monitoring dan event per bulan</p>
             </div>
             <button 
               v-if="isAdmin" 
               @click="openAddModal()" 
-              class="btn-accent flex items-center gap-2"
+              class="btn-accent flex items-center gap-2 self-start sm:self-auto"
             >
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -25,17 +25,17 @@
           </div>
 
           <!-- Month Navigation -->
-          <div class="card p-6 mb-6">
+          <div class="card dark:bg-gray-800 dark:border-gray-700 p-6 mb-6">
             <div class="flex items-center justify-between mb-6">
-              <button @click="prevMonth" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+              <button @click="prevMonth" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
                 <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
-              <h2 class="text-xl font-bold text-gray-900">
+              <h2 class="text-xl font-bold text-gray-900 dark:text-white">
                 {{ monevStore.bulanNames[currentMonth - 1] }} {{ currentYear }}
               </h2>
-              <button @click="nextMonth" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+              <button @click="nextMonth" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
                 <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                 </svg>
@@ -46,7 +46,7 @@
             <div class="grid grid-cols-7 gap-1">
               <!-- Day Headers -->
               <div v-for="day in ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min']" :key="day"
-                class="p-2 text-center text-xs font-semibold text-gray-500 uppercase">
+                class="p-2 text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">
                 {{ day }}
               </div>
 
@@ -56,18 +56,18 @@
               <!-- Day Cells -->
               <div 
                 v-for="d in daysInMonth" :key="d"
-                class="p-2 min-h-[70px] rounded-lg border transition-colors cursor-pointer"
+                class="p-1.5 lg:p-2 min-h-[50px] lg:min-h-[70px] rounded-lg border transition-colors cursor-pointer"
                 :class="[
                   d === today && currentMonth === todayMonth && currentYear === todayYear
-                    ? 'bg-purple-50 border-purple-300'
+                    ? 'bg-purple-50 dark:bg-purple-900/30 border-purple-300 dark:border-purple-600'
                     : isDayInWindow(d)
-                      ? 'bg-emerald-50 border-emerald-200 hover:border-emerald-400'
-                      : 'border-gray-100 hover:border-purple-200'
+                      ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-700 hover:border-emerald-400'
+                      : 'border-gray-100 dark:border-gray-700 hover:border-purple-200 dark:hover:border-purple-600'
                 ]"
                 @click="isAdmin && openAddModal(d)"
               >
                 <div class="flex items-center gap-1">
-                  <span class="text-sm font-medium" :class="d === today && currentMonth === todayMonth && currentYear === todayYear ? 'text-purple-700' : isDayInWindow(d) ? 'text-emerald-700' : 'text-gray-700'">
+                  <span class="text-sm font-medium" :class="d === today && currentMonth === todayMonth && currentYear === todayYear ? 'text-purple-700 dark:text-purple-400' : isDayInWindow(d) ? 'text-emerald-700 dark:text-emerald-400' : 'text-gray-700 dark:text-gray-300'">
                     {{ d }}
                   </span>
                   <span v-if="isDayInWindow(d)" class="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0"></span>
@@ -88,21 +88,21 @@
           </div>
 
           <!-- Reporting Window Timer -->
-          <div class="card p-6 mb-6">
+          <div class="card dark:bg-gray-800 dark:border-gray-700 p-6 mb-6">
             <div class="flex items-center justify-between mb-4">
-              <h2 class="text-xl font-bold text-gray-900">Jadwal Pelaporan</h2>
+              <h2 class="text-xl font-bold text-gray-900 dark:text-white">Jadwal Pelaporan</h2>
               <span 
                 class="px-3 py-1 text-xs font-semibold rounded-full"
-                :class="windowStatus.is_open ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'"
+                :class="windowStatus.is_open ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'"
               >
                 {{ windowStatus.is_open ? '● Dibuka' : '● Ditutup' }}
               </span>
             </div>
 
             <!-- Current Window Info -->
-            <div v-if="windowStatus.id" class="p-4 rounded-xl mb-4" :class="windowStatus.is_open ? 'bg-emerald-50 border border-emerald-200' : 'bg-gray-50 border border-gray-200'">
-              <p class="font-medium text-gray-900 mb-1">{{ windowStatus.title || 'Periode Pelaporan' }}</p>
-              <p class="text-sm text-gray-600">
+            <div v-if="windowStatus.id" class="p-4 rounded-xl mb-4" :class="windowStatus.is_open ? 'bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800' : 'bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600'">
+              <p class="font-medium text-gray-900 dark:text-white mb-1">{{ windowStatus.title || 'Periode Pelaporan' }}</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
                 {{ formatDateFull(windowStatus.start_date) }} — {{ formatDateFull(windowStatus.end_date) }}
               </p>
               <div v-if="windowStatus.is_open && countdown" class="mt-3">
@@ -114,25 +114,25 @@
               </div>
             </div>
 
-            <div v-else class="p-4 bg-gray-50 rounded-xl mb-4 text-center">
+            <div v-else class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl mb-4 text-center">
               <p class="text-gray-500 text-sm">Belum ada jadwal pelaporan yang dibuat</p>
             </div>
 
             <!-- Admin: Set Window Form -->
-            <div v-if="isAdmin" class="border-t border-gray-100 pt-4">
-              <h3 class="text-sm font-semibold text-gray-700 mb-3">Atur Jadwal Pelaporan</h3>
+            <div v-if="isAdmin" class="border-t border-gray-100 dark:border-gray-700 pt-4">
+              <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Atur Jadwal Pelaporan</h3>
               <form @submit.prevent="saveWindow" class="space-y-3">
                 <div>
-                  <label class="block text-xs font-medium text-gray-500 mb-1">Judul</label>
+                  <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Judul</label>
                   <input v-model="windowForm.title" type="text" placeholder="Contoh: Periode Pelaporan Maret 2026" class="input-field" required />
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                   <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Tanggal Buka</label>
+                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Tanggal Buka</label>
                     <input v-model="windowForm.start_date" type="date" class="input-field" required />
                   </div>
                   <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Tanggal Tutup</label>
+                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Tanggal Tutup</label>
                     <input v-model="windowForm.end_date" type="date" class="input-field" required />
                   </div>
                 </div>
@@ -154,18 +154,18 @@
           </div>
 
           <!-- Monthly Summary -->
-          <div class="card p-6">
-            <h2 class="text-xl font-bold text-gray-900 mb-4">
+          <div class="card dark:bg-gray-800 dark:border-gray-700 p-6">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">
               Ringkasan {{ monevStore.bulanNames[currentMonth - 1] }}
             </h2>
 
             <div v-if="monthlyRekap.length > 0" class="space-y-3">
               <div 
                 v-for="item in monthlyRekap" :key="item.output_id" 
-                class="p-4 bg-gray-50 rounded-xl"
+                class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl"
               >
-                <div class="flex items-center justify-between">
-                  <p class="font-medium text-gray-900 text-sm">{{ item.nama_output }}</p>
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                  <p class="font-medium text-gray-900 dark:text-gray-100 text-sm">{{ item.nama_output }}</p>
                   <div class="flex items-center gap-3 text-xs">
                     <span class="text-emerald-600 font-medium">Fisik: {{ item.realisasi_fisik }}%</span>
                     <span class="text-blue-600 font-medium">Keuangan: {{ formatCurrency(item.realisasi_keuangan) }}</span>
@@ -288,6 +288,8 @@ const monevStore = useMonevStore()
 const authStore = useAuthStore()
 
 const isAdmin = computed(() => authStore.user?.role === 'admin')
+
+const sidebarOpen = ref(false)
 
 const now = new Date()
 const currentMonth = ref(now.getMonth() + 1)

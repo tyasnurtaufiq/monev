@@ -1,23 +1,23 @@
 <template>
-  <div class="flex h-screen bg-gray-50">
-    <Sidebar />
+  <div class="flex h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
+    <Sidebar v-model="sidebarOpen" />
     
     <div class="flex-1 flex flex-col overflow-hidden">
-      <Header />
+      <Header @toggle-sidebar="sidebarOpen = !sidebarOpen" />
       
-      <main class="flex-1 overflow-y-auto p-6">
+      <main class="flex-1 overflow-y-auto p-3 lg:p-6">
         <div class="max-w-7xl mx-auto">
           <!-- Welcome Section -->
           <div class="mb-8">
-            <h1 class="text-2xl font-bold text-gray-900">
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
               Hi, {{ authStore.user?.name || 'Admin' }}! 👋
             </h1>
-            <p class="text-gray-500 mt-1">Dashboard Monitoring & Evaluasi Kegiatan</p>
+            <p class="text-gray-500 dark:text-gray-400 mt-1">Dashboard Monitoring & Evaluasi Kegiatan</p>
           </div>
 
           <!-- Tahun Selector -->
           <div class="flex items-center gap-4 mb-8">
-            <label class="text-sm font-medium text-gray-700">Tahun Anggaran:</label>
+            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Tahun Anggaran:</label>
             <select
               v-model="selectedTahunId"
               @change="onTahunChange"
@@ -31,57 +31,57 @@
 
           <!-- Stats Cards -->
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="card p-6">
+            <div class="card dark:bg-gray-800 dark:border-gray-700 p-6">
               <div class="flex items-center gap-4">
-                <div class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
-                  <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="w-12 h-12 bg-emerald-100 dark:bg-emerald-500/20 rounded-xl flex items-center justify-center">
+                  <svg class="w-6 h-6 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                   </svg>
                 </div>
                 <div>
-                  <p class="text-2xl font-bold text-gray-900">{{ monevStore.rekapStats.latestFisik }}%</p>
-                  <p class="text-sm text-gray-500">Realisasi Fisik</p>
+                  <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ monevStore.rekapStats.latestFisik }}%</p>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">Realisasi Fisik</p>
                 </div>
               </div>
             </div>
 
-            <div class="card p-6">
+            <div class="card dark:bg-gray-800 dark:border-gray-700 p-6">
               <div class="flex items-center gap-4">
-                <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                  <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="w-12 h-12 bg-blue-100 dark:bg-blue-500/20 rounded-xl flex items-center justify-center">
+                  <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
                 </div>
                 <div>
-                  <p class="text-2xl font-bold text-gray-900">{{ formatCurrency(totalRealisasiKeuangan) }}</p>
-                  <p class="text-sm text-gray-500">Realisasi Keuangan</p>
+                  <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ formatCurrency(totalRealisasiKeuangan) }}</p>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">Realisasi Keuangan</p>
                 </div>
               </div>
             </div>
 
-            <div class="card p-6">
+            <div class="card dark:bg-gray-800 dark:border-gray-700 p-6">
               <div class="flex items-center gap-4">
-                <div class="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center">
-                  <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="w-12 h-12 bg-yellow-100 dark:bg-yellow-500/20 rounded-xl flex items-center justify-center">
+                  <svg class="w-6 h-6 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
                 <div>
-                  <p class="text-2xl font-bold text-gray-900">{{ formatCurrency(monevStore.totalPagu) }}</p>
-                  <p class="text-sm text-gray-500">Total Pagu</p>
+                  <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ formatCurrency(monevStore.totalPagu) }}</p>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">Total Pagu</p>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- Progress Realisasi Chart -->
-          <div class="card overflow-hidden mb-8">
-            <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+          <div class="card dark:bg-gray-800 dark:border-gray-700 overflow-hidden mb-8">
+            <div class="px-4 lg:px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <h2 class="text-xl font-bold text-gray-900">Progres Realisasi Total (%)</h2>
-                <p class="text-sm text-gray-500 mt-1">Program → Kegiatan → Sub Kegiatan → Output</p>
+                <h2 class="text-lg lg:text-xl font-bold text-gray-900 dark:text-white">Progres Realisasi Total (%)</h2>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Program → Kegiatan → Sub Kegiatan → Output</p>
               </div>
-              <select v-model="selectedProgramFilter" class="input-field w-auto">
+              <select v-model="selectedProgramFilter" class="input-field w-full sm:w-auto">
                 <option value="">Semua Program</option>
                 <option v-for="p in monevStore.programs" :key="p.id" :value="p.id">{{ p.kode_program }} — {{ p.nama_program }}</option>
               </select>
@@ -99,18 +99,18 @@
               <!-- Iterate Programs -->
               <div 
                 v-for="prog in filteredProgressData" :key="prog.id"
-                class="rounded-xl border border-gray-200 overflow-hidden"
+                class="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden"
               >
                 <!-- Program Header -->
-                <div class="bg-gradient-to-r from-purple-600 to-purple-500 px-5 py-4">
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                      <span class="text-xs font-mono bg-white/20 text-white px-2 py-0.5 rounded">{{ prog.kode_program }}</span>
-                      <h3 class="font-bold text-white text-sm">{{ prog.nama_program }}</h3>
+                <div class="bg-gradient-to-r from-purple-600 to-purple-500 px-4 lg:px-5 py-4">
+                  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div class="flex items-center gap-3 min-w-0">
+                      <span class="text-xs font-mono bg-white/20 text-white px-2 py-0.5 rounded flex-shrink-0">{{ prog.kode_program }}</span>
+                      <h3 class="font-bold text-white text-sm truncate">{{ prog.nama_program }}</h3>
                     </div>
-                    <div class="flex items-center gap-3 text-white text-sm">
+                    <div class="flex flex-wrap items-center gap-2 sm:gap-3 text-white text-xs sm:text-sm flex-shrink-0">
                       <span>Fisik: <strong>{{ prog.avgFisik }}%</strong></span>
-                      <span class="opacity-50">|</span>
+                      <span class="opacity-50 hidden sm:inline">|</span>
                       <span>Keuangan: <strong>{{ formatCurrency(prog.totalKeuangan) }}</strong> / {{ formatCurrency(prog.totalPagu) }} ({{ prog.pctKeuangan }}%)</span>
                     </div>
                   </div>
@@ -142,22 +142,22 @@
                 </div>
 
                 <!-- Kegiatan -->
-                <div class="bg-white divide-y divide-gray-100">
-                  <div v-for="keg in prog.kegiatan" :key="keg.id" class="px-5 py-4">
-                    <div class="flex items-center justify-between mb-2">
-                      <div class="flex items-center gap-2">
-                        <span class="text-xs font-mono text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">{{ keg.kode_kegiatan }}</span>
-                        <span class="text-sm font-semibold text-gray-800">{{ keg.nama_kegiatan }}</span>
+                <div class="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
+                  <div v-for="keg in prog.kegiatan" :key="keg.id" class="px-4 lg:px-5 py-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-1">
+                      <div class="flex items-center gap-2 min-w-0">
+                        <span class="text-xs font-mono text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-1.5 py-0.5 rounded flex-shrink-0">{{ keg.kode_kegiatan }}</span>
+                        <span class="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">{{ keg.nama_kegiatan }}</span>
                       </div>
-                      <div class="flex items-center gap-3 text-xs text-gray-500">
-                        <span>F: <strong class="text-gray-700">{{ keg.avgFisik }}%</strong></span>
-                        <span>K: <strong class="text-gray-700">{{ formatCurrency(keg.totalKeuangan) }}</strong> ({{ keg.pctKeuangan }}%)</span>
+                      <div class="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400 flex-shrink-0">
+                        <span>F: <strong class="text-gray-700 dark:text-gray-300">{{ keg.avgFisik }}%</strong></span>
+                        <span>K: <strong class="text-gray-700 dark:text-gray-300">{{ formatCurrency(keg.totalKeuangan) }}</strong> ({{ keg.pctKeuangan }}%)</span>
                       </div>
                     </div>
                     <!-- Kegiatan bars -->
                     <div class="grid grid-cols-2 gap-2 mb-3">
                       <div>
-                        <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div class="h-2 bg-gray-100 dark:bg-gray-600 rounded-full overflow-hidden">
                           <div 
                             class="h-full rounded-full transition-all duration-700" 
                             :class="barColorSolid(keg.avgFisik)" 
@@ -166,7 +166,7 @@
                         </div>
                       </div>
                       <div>
-                        <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div class="h-2 bg-gray-100 dark:bg-gray-600 rounded-full overflow-hidden">
                           <div 
                             class="h-full rounded-full transition-all duration-700" 
                             :class="barColorSolid(keg.pctKeuangan)" 
@@ -178,15 +178,15 @@
 
                     <!-- Sub Kegiatan -->
                     <div class="ml-4 space-y-3">
-                      <div v-for="sk in keg.subKegiatan" :key="sk.id" class="bg-gray-50 rounded-lg p-3">
-                        <div class="flex items-center justify-between mb-2">
-                          <div class="flex items-center gap-2">
-                            <span class="text-[10px] font-mono text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded">{{ sk.kode_sub_kegiatan }}</span>
-                            <span class="text-xs font-medium text-gray-700">{{ sk.nama_sub_kegiatan }}</span>
+                      <div v-for="sk in keg.subKegiatan" :key="sk.id" class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-1">
+                          <div class="flex items-center gap-2 min-w-0">
+                            <span class="text-[10px] font-mono text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-1.5 py-0.5 rounded flex-shrink-0">{{ sk.kode_sub_kegiatan }}</span>
+                            <span class="text-xs font-medium text-gray-700 dark:text-gray-300 truncate">{{ sk.nama_sub_kegiatan }}</span>
                           </div>
-                          <div class="flex items-center gap-3 text-[10px] text-gray-500">
-                            <span>F: <strong class="text-gray-700">{{ sk.avgFisik }}%</strong></span>
-                            <span>K: <strong class="text-gray-700">{{ formatCurrency(sk.totalKeuangan) }}</strong> ({{ sk.pctKeuangan }}%)</span>
+                          <div class="flex items-center gap-3 text-[10px] text-gray-500 dark:text-gray-400 flex-shrink-0">
+                            <span>F: <strong class="text-gray-700 dark:text-gray-300">{{ sk.avgFisik }}%</strong></span>
+                            <span>K: <strong class="text-gray-700 dark:text-gray-300">{{ formatCurrency(sk.totalKeuangan) }}</strong> ({{ sk.pctKeuangan }}%)</span>
                           </div>
                         </div>
 
@@ -194,15 +194,15 @@
                         <div class="space-y-2 ml-2">
                           <div v-for="out in sk.outputs" :key="out.id">
                             <div class="flex items-center justify-between mb-1">
-                              <span class="text-xs text-gray-600 truncate flex-1 mr-2">{{ out.nama_output }}</span>
+                              <span class="text-xs text-gray-600 dark:text-gray-300 truncate flex-1 mr-2">{{ out.nama_output }}</span>
                               <div class="flex items-center gap-2 text-[10px] whitespace-nowrap">
-                                <span class="text-gray-500">Pagu: {{ formatCurrency(out.pagu) }}</span>
+                                <span class="text-gray-500 dark:text-gray-400">Pagu: {{ formatCurrency(out.pagu) }}</span>
                               </div>
                             </div>
                             <!-- Fisik bar -->
                             <div class="flex items-center gap-2 mb-1">
                               <span class="text-[10px] text-gray-400 w-8">Fisik</span>
-                              <div class="flex-1 h-4 bg-gray-200 rounded overflow-hidden relative">
+                              <div class="flex-1 h-4 bg-gray-200 dark:bg-gray-600 rounded overflow-hidden relative">
                                 <div 
                                   class="h-full rounded transition-all duration-700" 
                                   :class="barColorSolid(out.avgFisik)" 
@@ -216,7 +216,7 @@
                             <!-- Keuangan bar -->
                             <div class="flex items-center gap-2">
                               <span class="text-[10px] text-gray-400 w-8">Keu.</span>
-                              <div class="flex-1 h-4 bg-gray-200 rounded overflow-hidden relative">
+                              <div class="flex-1 h-4 bg-gray-200 dark:bg-gray-600 rounded overflow-hidden relative">
                                 <div 
                                   class="h-full rounded transition-all duration-700" 
                                   :class="barColorSolid(out.pctKeuangan)" 
@@ -261,6 +261,7 @@ import Header from '../components/layout/Header.vue'
 const authStore = useAuthStore()
 const monevStore = useMonevStore()
 
+const sidebarOpen = ref(false)
 const selectedTahunId = ref(monevStore.selectedTahunId)
 
 const selectedProgramFilter = ref('')

@@ -1,7 +1,18 @@
 <template>
-  <aside class="w-64 bg-white border-r border-gray-100 flex flex-col h-full">
+  <!-- Mobile backdrop -->
+  <div 
+    v-if="modelValue" 
+    class="fixed inset-0 bg-black/50 z-40 lg:hidden"
+    @click="$emit('update:modelValue', false)"
+  ></div>
+
+  <aside 
+    class="bg-white dark:bg-gray-800 border-r border-gray-100 dark:border-gray-700 flex flex-col h-full z-50
+           fixed inset-y-0 left-0 w-64 transform transition-all duration-300 lg:relative lg:translate-x-0"
+    :class="modelValue ? 'translate-x-0' : '-translate-x-full'"
+  >
     <!-- Logo -->
-    <div class="p-6 border-b border-gray-100">
+    <div class="p-6 border-b border-gray-100 dark:border-gray-700">
       <div class="flex items-center gap-3">
         <div class="w-10 h-10 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-xl flex items-center justify-center">
           <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -9,9 +20,18 @@
           </svg>
         </div>
         <div>
-          <h2 class="font-bold text-gray-900">MONEV</h2>
-          <p class="text-xs text-gray-500">Monitoring & Evaluasi</p>
+          <h2 class="font-bold text-gray-900 dark:text-white whitespace-nowrap text-sm">MONEV <span class="text-purple-600 dark:text-purple-400">DISHUB DIY</span></h2>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Monitoring & Evaluasi</p>
         </div>
+        <!-- Close button (mobile only) -->
+        <button 
+          class="ml-auto p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg lg:hidden"
+          @click="$emit('update:modelValue', false)"
+        >
+          <svg class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
       </div>
     </div>
 
@@ -22,8 +42,9 @@
         :to="item.to"
         class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all"
         :class="$route.path === item.to 
-          ? 'bg-purple-50 text-purple-700' 
-          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'"
+          ? 'bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300' 
+          : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-200'"
+        @click="$emit('update:modelValue', false)"
       >
         <component :is="item.icon" class="w-5 h-5" />
         {{ item.label }}
@@ -31,14 +52,14 @@
     </nav>
 
     <!-- User -->
-    <div class="p-4 border-t border-gray-100">
+    <div class="p-4 border-t border-gray-100 dark:border-gray-700">
       <div class="flex items-center gap-3 px-4 py-3">
         <div class="w-8 h-8 bg-gradient-to-br from-purple-500 to-indigo-500 rounded-lg flex items-center justify-center text-white text-sm font-bold">
           {{ userInitials }}
         </div>
         <div class="flex-1 min-w-0">
-          <p class="text-sm font-medium text-gray-900 truncate">{{ authStore.user?.name || 'User' }}</p>
-          <p class="text-xs text-gray-500 truncate">{{ authStore.user?.role || 'user' }}</p>
+          <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ authStore.user?.name || 'User' }}</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ authStore.user?.role || 'user' }}</p>
         </div>
       </div>
     </div>
@@ -48,6 +69,15 @@
 <script setup>
 import { computed, h } from 'vue'
 import { useAuthStore } from '../../stores/auth'
+
+defineProps({
+  modelValue: {
+    type: Boolean,
+    default: false
+  }
+})
+
+defineEmits(['update:modelValue'])
 
 const authStore = useAuthStore()
 

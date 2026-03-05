@@ -1,19 +1,19 @@
 <template>
-  <div class="flex h-screen bg-gray-50">
-    <Sidebar />
+  <div class="flex h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
+    <Sidebar v-model="sidebarOpen" />
     
     <div class="flex-1 flex flex-col overflow-hidden">
-      <Header />
+      <Header @toggle-sidebar="sidebarOpen = !sidebarOpen" />
       
-      <main class="flex-1 overflow-y-auto p-6">
+      <main class="flex-1 overflow-y-auto p-3 lg:p-6">
         <div class="max-w-5xl mx-auto">
           <!-- Page Header -->
-          <div class="flex items-center justify-between mb-8">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-3">
             <div>
-              <h1 class="text-2xl font-bold text-gray-900">Manajemen User</h1>
-              <p class="text-gray-500 mt-1">Kelola akun pengguna sistem</p>
+              <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Manajemen User</h1>
+              <p class="text-gray-500 dark:text-gray-400 mt-1">Kelola akun pengguna sistem</p>
             </div>
-            <button @click="openAddModal" class="btn-accent flex items-center gap-2">
+            <button @click="openAddModal" class="btn-accent flex items-center gap-2 self-start sm:self-auto">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
               </svg>
@@ -22,7 +22,7 @@
           </div>
 
           <!-- Search Bar -->
-          <div class="card p-4 mb-6">
+          <div class="card dark:bg-gray-800 dark:border-gray-700 p-4 mb-6">
             <div class="relative">
               <svg class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -37,9 +37,10 @@
           </div>
 
           <!-- Users Table -->
-          <div class="card overflow-hidden">
+          <div class="card dark:bg-gray-800 dark:border-gray-700 overflow-hidden">
+            <div class="overflow-x-auto">
             <table class="w-full">
-              <thead class="bg-gray-50 border-b border-gray-100">
+              <thead class="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700">
                 <tr>
                   <th 
                     @click="toggleSort" 
@@ -53,27 +54,27 @@
                       </svg>
                     </div>
                   </th>
-                  <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Nama</th>
-                  <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Username</th>
-                  <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Role</th>
-                  <th class="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase">Aksi</th>
+                  <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Nama</th>
+                  <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Username</th>
+                  <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Role</th>
+                  <th class="px-6 py-4 text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-gray-100">
-                <tr v-for="u in filteredUsers" :key="u.id" class="hover:bg-gray-50 transition-colors">
+              <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                <tr v-for="u in filteredUsers" :key="u.id" class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                   <td class="px-6 py-4">
-                    <span class="text-sm font-mono text-purple-600 bg-purple-50 px-2 py-0.5 rounded">{{ u.id }}</span>
+                    <span class="text-sm font-mono text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/30 px-2 py-0.5 rounded">{{ u.id }}</span>
                   </td>
                   <td class="px-6 py-4">
-                    <p class="font-medium text-gray-900">{{ u.name }}</p>
+                    <p class="font-medium text-gray-900 dark:text-gray-100">{{ u.name }}</p>
                   </td>
-                  <td class="px-6 py-4 text-sm text-gray-600">{{ u.username }}</td>
+                  <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{{ u.username }}</td>
                   <td class="px-6 py-4">
                     <span 
                       class="px-2.5 py-1 text-xs font-semibold rounded-full"
                       :class="u.role === 'admin' 
-                        ? 'bg-purple-100 text-purple-700' 
-                        : 'bg-blue-100 text-blue-700'"
+                        ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300' 
+                        : 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'"
                     >
                       {{ u.role }}
                     </span>
@@ -100,6 +101,7 @@
                 </tr>
               </tbody>
             </table>
+            </div>
 
             <div v-if="filteredUsers.length === 0" class="text-center py-12">
               <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -213,6 +215,8 @@ import Header from '../components/layout/Header.vue'
 
 const authStore = useAuthStore()
 const currentUserId = computed(() => authStore.user?.id)
+
+const sidebarOpen = ref(false)
 
 const users = ref([])
 const showModal = ref(false)

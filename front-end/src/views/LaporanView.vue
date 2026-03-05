@@ -1,17 +1,17 @@
 <template>
-  <div class="flex h-screen bg-gray-50">
-    <Sidebar />
+  <div class="flex h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
+    <Sidebar v-model="sidebarOpen" />
     
     <div class="flex-1 flex flex-col overflow-hidden">
-      <Header />
+      <Header @toggle-sidebar="sidebarOpen = !sidebarOpen" />
       
-      <main class="flex-1 overflow-y-auto p-6">
+      <main class="flex-1 overflow-y-auto p-3 lg:p-6">
         <div class="max-w-7xl mx-auto">
           <!-- Page Header -->
-          <div class="flex items-center justify-between mb-8">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-3">
             <div>
-              <h1 class="text-2xl font-bold text-gray-900">Laporan Monitoring</h1>
-              <p class="text-gray-500 mt-1">Rekapitulasi progress fisik dan keuangan</p>
+              <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Laporan Monitoring</h1>
+              <p class="text-gray-500 dark:text-gray-400 mt-1">Rekapitulasi progress fisik dan keuangan</p>
             </div>
             <div class="flex items-center gap-3">
               <button @click="exportToExcel" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2">
@@ -28,21 +28,21 @@
 
           <!-- Stats Cards -->
           <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div class="card p-6 border-l-4 border-purple-500">
-              <p class="text-sm text-gray-500 mb-1">Total Program</p>
-              <p class="text-3xl font-bold text-gray-900">{{ monevStore.totalProgram }}</p>
+            <div class="card dark:bg-gray-800 dark:border-gray-700 p-6 border-l-4 border-purple-500">
+              <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">Total Program</p>
+              <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ monevStore.totalProgram }}</p>
             </div>
-            <div class="card p-6 border-l-4 border-blue-500">
-              <p class="text-sm text-gray-500 mb-1">Total Pagu</p>
-              <p class="text-xl font-bold text-gray-900">{{ formatCurrency(monevStore.totalPagu) }}</p>
+            <div class="card dark:bg-gray-800 dark:border-gray-700 p-6 border-l-4 border-blue-500">
+              <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">Total Pagu</p>
+              <p class="text-xl font-bold text-gray-900 dark:text-white">{{ formatCurrency(monevStore.totalPagu) }}</p>
             </div>
-            <div class="card p-6 border-l-4 border-emerald-500">
-              <p class="text-sm text-gray-500 mb-1">Realisasi Fisik</p>
+            <div class="card dark:bg-gray-800 dark:border-gray-700 p-6 border-l-4 border-emerald-500">
+              <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">Realisasi Fisik</p>
               <p class="text-3xl font-bold text-emerald-600">{{ monevStore.rekapStats.latestFisik }}%</p>
             </div>
-            <div class="card p-6 border-l-4 border-yellow-500">
-              <p class="text-sm text-gray-500 mb-1">Total Realisasi Keuangan</p>
-              <p class="text-xl font-bold text-gray-900">{{ formatCurrency(monevStore.rekapStats.totalRealisasi) }}</p>
+            <div class="card dark:bg-gray-800 dark:border-gray-700 p-6 border-l-4 border-yellow-500">
+              <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">Total Realisasi Keuangan</p>
+              <p class="text-xl font-bold text-gray-900 dark:text-white">{{ formatCurrency(monevStore.rekapStats.totalRealisasi) }}</p>
             </div>
           </div>
 
@@ -58,34 +58,34 @@
           </div>
 
           <!-- Monitoring Input per Bulan -->
-          <div class="card p-6 mb-8">
-            <h2 class="text-xl font-bold text-gray-900 mb-4">Input & Monitoring Bulanan</h2>
+          <div class="card dark:bg-gray-800 dark:border-gray-700 p-6 mb-8">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Input & Monitoring Bulanan</h2>
 
             <!-- Cascading Filters -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
               <div>
-                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Program</label>
+                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-1">Program</label>
                 <select v-model="selectedProgramId" @change="onProgramChange" class="input-field w-full">
                   <option value="">Pilih Program</option>
                   <option v-for="p in monevStore.programs" :key="p.id" :value="p.id">{{ p.kode_program }} — {{ p.nama_program }}</option>
                 </select>
               </div>
               <div>
-                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Kegiatan</label>
+                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-1">Kegiatan</label>
                 <select v-model="selectedKegiatanId" @change="onKegiatanChange" class="input-field w-full" :disabled="!selectedProgramId">
                   <option value="">Pilih Kegiatan</option>
                   <option v-for="k in localKegiatanList" :key="k.id" :value="k.id">{{ k.kode_kegiatan }} — {{ k.nama_kegiatan }}</option>
                 </select>
               </div>
               <div>
-                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Sub Kegiatan</label>
+                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-1">Sub Kegiatan</label>
                 <select v-model="selectedSubKegiatanId" @change="onSubKegiatanChange" class="input-field w-full" :disabled="!selectedKegiatanId">
                   <option value="">Pilih Sub Kegiatan</option>
                   <option v-for="sk in localSubKegiatanList" :key="sk.id" :value="sk.id">{{ sk.kode_sub_kegiatan }} — {{ sk.nama_sub_kegiatan }}</option>
                 </select>
               </div>
               <div>
-                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Bulan</label>
+                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-1">Bulan</label>
                 <select v-model="selectedBulan" class="input-field w-full">
                   <option v-for="(name, idx) in monevStore.bulanNames" :key="idx" :value="idx + 1">{{ name }}</option>
                 </select>
@@ -101,130 +101,159 @@
               Memuat data...
             </div>
 
-            <!-- Monitoring Table -->
-            <div v-else-if="outputsForMonitoring.length > 0" class="overflow-x-auto">
-              <table class="w-full text-sm">
-                <thead class="bg-gray-50">
-                  <tr>
-                    <th class="px-3 py-3 text-left text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">Output</th>
-                    <th class="px-3 py-3 text-right text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">Pagu</th>
-                    <th class="px-3 py-3 text-center text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">Target Fisik (%)</th>
-                    <th class="px-3 py-3 text-center text-xs font-semibold text-gray-500 uppercase whitespace-nowrap bg-amber-50">Real. Fisik Bln Lalu (%)</th>
-                    <th class="px-3 py-3 text-center text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">Realisasi Fisik (%)</th>
-                    <th class="px-3 py-3 text-center text-xs font-semibold text-gray-500 uppercase whitespace-nowrap bg-indigo-50">Deviasi Fisik (%)</th>
-                    <th class="px-3 py-3 text-center text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">Target Keuangan</th>
-                    <th class="px-3 py-3 text-center text-xs font-semibold text-gray-500 uppercase whitespace-nowrap bg-amber-50">Real. Keu. Bln Lalu</th>
-                    <th class="px-3 py-3 text-center text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">Realisasi Keuangan</th>
-                    <th class="px-3 py-3 text-center text-xs font-semibold text-gray-500 uppercase whitespace-nowrap bg-indigo-50">Deviasi Keuangan (%)</th>
-                    <th class="px-3 py-3 text-center text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">Tahapan pekerjaan (fisik)</th>
-                    <th class="px-3 py-3 text-center text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">Faktor Penghambat</th>
-                    <th class="px-3 py-3 text-center text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">Faktor Pendukung</th>
-                    <th class="px-3 py-3 text-center text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">Aksi</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100">
-                  <tr v-for="out in outputsForMonitoring" :key="out.id" class="hover:bg-gray-50">
-                    <td class="px-3 py-3 font-medium text-gray-900">{{ out.nama_output }}</td>
-                    <td class="px-3 py-3 text-right text-gray-600 whitespace-nowrap">{{ formatCurrency(out.pagu) }}</td>
-                    <!-- Target Fisik -->
-                    <td class="px-3 py-3">
-                      <input 
-                        v-model="monitoringForm[out.id].target_fisik" 
-                        type="number" step="0.01" min="0" max="100"
-                        class="input-field text-center w-24 mx-auto"
-                        :disabled="!isAdmin && !windowOpen"
-                      />
-                    </td>
-                    <!-- Realisasi Fisik Bulan Lalu -->
-                    <td class="px-3 py-3 text-center bg-amber-50">
-                      <span class="text-sm text-gray-600">{{ prevMonthData[out.id]?.realisasi_fisik ?? '-' }}</span>
-                    </td>
-                    <!-- Realisasi Fisik -->
-                    <td class="px-3 py-3">
-                      <input 
-                        v-model="monitoringForm[out.id].realisasi_fisik" 
-                        type="number" step="0.01" min="0" max="100"
-                        class="input-field text-center w-24 mx-auto"
-                        :disabled="!isAdmin && !windowOpen"
-                      />
-                    </td>
-                    <!-- Deviasi Fisik -->
-                    <td class="px-3 py-3 text-center bg-indigo-50">
-                      <span class="text-sm font-medium" :class="deviasiColor(calcDeviasi(monitoringForm[out.id].realisasi_fisik, monitoringForm[out.id].target_fisik))">
-                        {{ formatDeviasi(monitoringForm[out.id].realisasi_fisik, monitoringForm[out.id].target_fisik) }}
-                      </span>
-                    </td>
-                    <!-- Target Keuangan -->
-                    <td class="px-3 py-3">
-                      <input 
-                        v-model="monitoringForm[out.id].target_keuangan" 
-                        type="number" step="0.01" min="0"
-                        class="input-field text-center w-32 mx-auto"
-                        :disabled="!isAdmin && !windowOpen"
-                      />
-                    </td>
-                    <!-- Realisasi Keuangan Bulan Lalu -->
-                    <td class="px-3 py-3 text-center bg-amber-50">
-                      <span class="text-sm text-gray-600">{{ prevMonthData[out.id]?.realisasi_keuangan != null ? formatCurrency(prevMonthData[out.id].realisasi_keuangan) : '-' }}</span>
-                    </td>
-                    <!-- Realisasi Keuangan -->
-                    <td class="px-3 py-3">
-                      <input 
-                        v-model="monitoringForm[out.id].realisasi_keuangan" 
-                        type="number" step="0.01" min="0"
-                        class="input-field text-center w-32 mx-auto"
-                        :disabled="!isAdmin && !windowOpen"
-                      />
-                    </td>
-                    <!-- Deviasi Keuangan -->
-                    <td class="px-3 py-3 text-center bg-indigo-50">
-                      <span class="text-sm font-medium" :class="deviasiColor(calcDeviasi(monitoringForm[out.id].realisasi_keuangan, monitoringForm[out.id].target_keuangan))">
-                        {{ formatDeviasi(monitoringForm[out.id].realisasi_keuangan, monitoringForm[out.id].target_keuangan) }}
-                      </span>
-                    </td>
-                    <!-- Progres -->
-                    <td class="px-3 py-3">
-                      <textarea 
-                        v-model="monitoringForm[out.id].progress" 
-                        rows="2"
-                        placeholder="Tulis progres..."
-                        class="input-field w-36 text-xs resize-none"
-                        :disabled="!isAdmin && !windowOpen"
-                      ></textarea>
-                    </td>
-                    <!-- Hambatan -->
-                    <td class="px-3 py-3">
-                      <textarea 
-                        v-model="monitoringForm[out.id].hambatan" 
-                        rows="2"
-                        placeholder="Tulis hambatan..."
-                        class="input-field w-36 text-xs resize-none"
-                        :disabled="!isAdmin && !windowOpen"
-                      ></textarea>
-                    </td>
-                    <!-- Dorongan -->
-                    <td class="px-3 py-3">
-                      <textarea 
-                        v-model="monitoringForm[out.id].pendorong" 
-                        rows="2"
-                        placeholder="Tulis dorongan..."
-                        class="input-field w-36 text-xs resize-none"
-                        :disabled="!isAdmin && !windowOpen"
-                      ></textarea>
-                    </td>
-                    <!-- Aksi -->
-                    <td class="px-3 py-3 text-center">
-                      <button 
-                        @click="saveMonitoringRow(out)"
-                        class="px-3 py-1.5 bg-purple-600 text-white text-xs font-medium rounded-lg hover:bg-purple-700 transition-colors"
-                        :disabled="savingOutputId === out.id || (!isAdmin && !windowOpen)"
-                      >
-                        {{ savingOutputId === out.id ? '...' : 'Simpan' }}
-                      </button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+            <!-- Monitoring Cards (Form Layout) -->
+            <div v-else-if="outputsForMonitoring.length > 0" class="space-y-6">
+              <div 
+                v-for="out in outputsForMonitoring" :key="out.id"
+                class="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden"
+              >
+                <!-- Output Header -->
+                <div class="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/30 dark:to-indigo-900/30 px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+                  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                    <h4 class="font-semibold text-gray-900 dark:text-white text-sm">{{ out.nama_output }}</h4>
+                    <span class="text-xs font-medium text-purple-600 bg-purple-100 px-2 py-0.5 rounded-full self-start sm:self-auto">
+                      Pagu: {{ formatCurrency(out.pagu) }}
+                    </span>
+                  </div>
+                </div>
+
+                <div class="p-4 space-y-5">
+                  <!-- Fisik Section -->
+                  <div>
+                    <h5 class="text-xs font-bold text-emerald-700 uppercase tracking-wide mb-3 flex items-center gap-2">
+                      <span class="w-2 h-2 bg-emerald-500 rounded-full"></span>
+                      Fisik
+                    </h5>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      <div>
+                        <label class="block text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase mb-1">Target (%)</label>
+                        <input 
+                          v-model="monitoringForm[out.id].target_fisik" 
+                          type="number" step="0.01" min="0" max="100"
+                          class="input-field text-center w-full"
+                          :disabled="!isAdmin && !windowOpen"
+                        />
+                      </div>
+                      <div>
+                        <label class="block text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase mb-1">Bln Lalu (%)</label>
+                        <div class="px-3 py-2.5 bg-amber-50 border border-amber-200 rounded-xl text-sm text-center text-gray-600">
+                          {{ prevMonthData[out.id]?.realisasi_fisik ?? '-' }}
+                        </div>
+                      </div>
+                      <div>
+                        <label class="block text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase mb-1">Realisasi (%)</label>
+                        <input 
+                          v-model="monitoringForm[out.id].realisasi_fisik" 
+                          type="number" step="0.01" min="0" max="100"
+                          class="input-field text-center w-full"
+                          :disabled="!isAdmin && !windowOpen"
+                        />
+                      </div>
+                      <div>
+                        <label class="block text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase mb-1">Deviasi (%)</label>
+                        <div class="px-3 py-2.5 bg-indigo-50 border border-indigo-200 rounded-xl text-sm text-center font-semibold"
+                          :class="deviasiColor(calcDeviasi(monitoringForm[out.id].realisasi_fisik, monitoringForm[out.id].target_fisik))"
+                        >
+                          {{ formatDeviasi(monitoringForm[out.id].realisasi_fisik, monitoringForm[out.id].target_fisik) }}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Keuangan Section -->
+                  <div>
+                    <h5 class="text-xs font-bold text-blue-700 uppercase tracking-wide mb-3 flex items-center gap-2">
+                      <span class="w-2 h-2 bg-blue-500 rounded-full"></span>
+                      Keuangan
+                    </h5>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      <div>
+                        <label class="block text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase mb-1">Target (Rp)</label>
+                        <input 
+                          v-model="monitoringForm[out.id].target_keuangan" 
+                          type="number" step="0.01" min="0"
+                          class="input-field text-center w-full"
+                          :disabled="!isAdmin && !windowOpen"
+                        />
+                      </div>
+                      <div>
+                        <label class="block text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase mb-1">Bln Lalu</label>
+                        <div class="px-3 py-2.5 bg-amber-50 border border-amber-200 rounded-xl text-sm text-center text-gray-600 truncate">
+                          {{ prevMonthData[out.id]?.realisasi_keuangan != null ? formatCurrency(prevMonthData[out.id].realisasi_keuangan) : '-' }}
+                        </div>
+                      </div>
+                      <div>
+                        <label class="block text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase mb-1">Realisasi (Rp)</label>
+                        <input 
+                          v-model="monitoringForm[out.id].realisasi_keuangan" 
+                          type="number" step="0.01" min="0"
+                          class="input-field text-center w-full"
+                          :disabled="!isAdmin && !windowOpen"
+                        />
+                      </div>
+                      <div>
+                        <label class="block text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase mb-1">Deviasi (%)</label>
+                        <div class="px-3 py-2.5 bg-indigo-50 border border-indigo-200 rounded-xl text-sm text-center font-semibold"
+                          :class="deviasiColor(calcDeviasi(monitoringForm[out.id].realisasi_keuangan, monitoringForm[out.id].target_keuangan))"
+                        >
+                          {{ formatDeviasi(monitoringForm[out.id].realisasi_keuangan, monitoringForm[out.id].target_keuangan) }}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Keterangan Section -->
+                  <div>
+                    <h5 class="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-3 flex items-center gap-2">
+                      <span class="w-2 h-2 bg-gray-400 rounded-full"></span>
+                      Keterangan
+                    </h5>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div>
+                        <label class="block text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase mb-1">Tahapan Pekerjaan (Fisik)</label>
+                        <textarea 
+                          v-model="monitoringForm[out.id].progress" 
+                          rows="3"
+                          placeholder="Tulis tahapan pekerjaan..."
+                          class="input-field w-full text-sm resize-none"
+                          :disabled="!isAdmin && !windowOpen"
+                        ></textarea>
+                      </div>
+                      <div>
+                        <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Faktor Penghambat</label>
+                        <textarea 
+                          v-model="monitoringForm[out.id].hambatan" 
+                          rows="3"
+                          placeholder="Tulis faktor penghambat..."
+                          class="input-field w-full text-sm resize-none"
+                          :disabled="!isAdmin && !windowOpen"
+                        ></textarea>
+                      </div>
+                      <div>
+                        <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Faktor Pendukung</label>
+                        <textarea 
+                          v-model="monitoringForm[out.id].pendorong" 
+                          rows="3"
+                          placeholder="Tulis faktor pendukung..."
+                          class="input-field w-full text-sm resize-none"
+                          :disabled="!isAdmin && !windowOpen"
+                        ></textarea>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Save Button -->
+                  <div class="flex justify-end pt-2 border-t border-gray-100 dark:border-gray-700">
+                    <button 
+                      @click="saveMonitoringRow(out)"
+                      class="px-5 py-2 bg-purple-600 text-white text-sm font-medium rounded-xl hover:bg-purple-700 transition-colors shadow-sm"
+                      :disabled="savingOutputId === out.id || (!isAdmin && !windowOpen)"
+                    >
+                      {{ savingOutputId === out.id ? 'Menyimpan...' : 'Simpan' }}
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div v-else class="text-center py-12 text-gray-500">
@@ -234,55 +263,55 @@
           </div>
 
           <!-- Rekap Per Program -->
-          <div class="card p-6">
-            <h2 class="text-xl font-bold text-gray-900 mb-6">Rekap Per Program</h2>
+          <div class="card dark:bg-gray-800 dark:border-gray-700 p-6">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6">Rekap Per Program</h2>
             
             <div v-if="monevStore.rekapByProgram.length > 0" class="space-y-6">
-              <div v-for="prog in monevStore.rekapByProgram" :key="prog.id" class="bg-gray-50 rounded-xl p-4">
-                <h3 class="font-bold text-gray-900 mb-3">
+              <div v-for="prog in monevStore.rekapByProgram" :key="prog.id" class="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4">
+                <h3 class="font-bold text-gray-900 dark:text-white mb-3">
                   <span class="text-xs font-mono text-purple-600 bg-purple-100 px-2 py-0.5 rounded mr-2">{{ prog.kode_program }}</span>
                   {{ prog.nama_program }}
                 </h3>
 
                 <div v-for="keg in prog.kegiatan" :key="keg.id" class="ml-4 mb-3">
-                  <p class="font-medium text-gray-800 text-sm mb-2">
+                  <p class="font-medium text-gray-800 dark:text-gray-200 text-sm mb-2">
                     <span class="text-xs font-mono text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded mr-1.5">{{ keg.kode_kegiatan }}</span> Kegiatan
                     {{ keg.nama_kegiatan }}
                   </p>
                   
                   <div v-for="sk in keg.subKegiatan" :key="sk.id" class="ml-4 mb-2">
-                    <p class="text-xs text-gray-600 mb-1">{{ sk.kode_sub_kegiatan }} — Sub Kegiatan {{ sk.nama_sub_kegiatan }}</p>
+                    <p class="text-xs text-gray-600 dark:text-gray-400 mb-1">{{ sk.kode_sub_kegiatan }} — Sub Kegiatan {{ sk.nama_sub_kegiatan }}</p>
                     
-                    <div v-for="out in sk.outputs" :key="out.id" class="ml-4 bg-white rounded-lg p-3 mb-1">
-                      <div class="flex items-center justify-between mb-2">
-                        <span class="text-sm font-medium text-gray-700">Output : {{ out.nama_output }}</span>
-                        <span class="text-xs text-gray-500">Pagu: {{ formatCurrency(out.pagu) }}</span>
+                    <div v-for="out in sk.outputs" :key="out.id" class="ml-4 bg-white dark:bg-gray-800 rounded-lg p-3 mb-1">
+                      <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-1">
+                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Output : {{ out.nama_output }}</span>
+                        <span class="text-xs text-gray-500 dark:text-gray-400">Pagu: {{ formatCurrency(out.pagu) }}</span>
                       </div>
                       
                       <div v-if="out.monitoring.length > 0" class="space-y-2">
                         <div 
                           v-for="mon in out.monitoring" :key="mon.id"
-                          class="text-xs bg-gray-50 rounded-lg px-3 py-2"
+                          class="text-xs bg-gray-50 dark:bg-gray-700/50 rounded-lg px-3 py-2"
                         >
                           <div class="flex items-center gap-2 mb-1">
-                            <span class="font-semibold text-gray-700">{{ monevStore.bulanNames[mon.bulan - 1]?.slice(0, 3) }}:</span>
+                            <span class="font-semibold text-gray-700 dark:text-gray-300">{{ monevStore.bulanNames[mon.bulan - 1]?.slice(0, 3) }}:</span>
                             <span class="text-emerald-600">Target Fisik: {{ mon.target_fisik }}%</span>
                             <span class="text-emerald-600">Realisasi Fisik: {{ mon.realisasi_fisik }}%</span>
                             <span class="text-blue-600">Target Keuangan: Rp.{{ formatCurrency(mon.target_keuangan) }}</span>
                             <span class="text-blue-600">Realisasi Keuangan: Rp.{{ formatCurrency(mon.realisasi_keuangan) }}</span>
                           </div>
-                          <div v-if="mon.progress || mon.hambatan || mon.pendorong" class="grid grid-cols-3 gap-2 mt-1 pt-1 border-t border-gray-100">
+                          <div v-if="mon.progress || mon.hambatan || mon.pendorong" class="grid grid-cols-3 gap-2 mt-1 pt-1 border-t border-gray-100 dark:border-gray-600">
                             <div v-if="mon.progress">
                               <span class="font-semibold text-purple-600">Tahapan Pekerjaan:</span>
-                              <span class="text-gray-600 ml-1">{{ mon.progress }}</span>
+                              <span class="text-gray-600 dark:text-gray-400 ml-1">{{ mon.progress }}</span>
                             </div>
                             <div v-if="mon.hambatan">
                               <span class="font-semibold text-red-500">Faktor Penghambat:</span>
-                              <span class="text-gray-600 ml-1">{{ mon.hambatan }}</span>
+                              <span class="text-gray-600 dark:text-gray-400 ml-1">{{ mon.hambatan }}</span>
                             </div>
                             <div v-if="mon.pendorong">
                               <span class="font-semibold text-teal-600">Faktor Pendukung:</span>
-                              <span class="text-gray-600 ml-1">{{ mon.pendorong }}</span>
+                              <span class="text-gray-600 dark:text-gray-400 ml-1">{{ mon.pendorong }}</span>
                             </div>
                           </div>
                         </div>
@@ -317,6 +346,7 @@ import Header from '../components/layout/Header.vue'
 const monevStore = useMonevStore()
 const authStore = useAuthStore()
 
+const sidebarOpen = ref(false)
 const isAdmin = computed(() => authStore.user?.role === 'admin')
 const windowOpen = ref(false)
 
