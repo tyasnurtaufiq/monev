@@ -10,6 +10,7 @@ export const useMonevStore = defineStore('monev', () => {
     const kegiatanList = ref([])
     const subKegiatanList = ref([])
     const outputList = ref([])
+    const belanjaList = ref([])
     const periodeList = ref([])
     const monitoringList = ref([])
     const rekapData = ref([])
@@ -115,6 +116,7 @@ export const useMonevStore = defineStore('monev', () => {
                     if (!out) {
                         out = {
                             id: row.output_id,
+                            kode: row.kode_output,
                             nama_output: row.nama_output,
                             pagu: row.pagu,
                             monitoring: []
@@ -155,7 +157,9 @@ export const useMonevStore = defineStore('monev', () => {
     const fetchTahun = async () => {
         tahunList.value = await api.get('/tahun')
         if (tahunList.value.length > 0 && !selectedTahunId.value) {
-            selectedTahunId.value = tahunList.value[0].id
+            const currentYear = new Date().getFullYear().toString()
+            const found = tahunList.value.find(t => t.tahun.toString() === currentYear)
+            selectedTahunId.value = found ? found.id : tahunList.value[0].id
         }
     }
 
@@ -262,6 +266,30 @@ export const useMonevStore = defineStore('monev', () => {
         outputList.value = outputList.value.filter(o => o.id !== id)
     }
 
+    // Belanja
+    const fetchBelanja = async (outputId) => {
+        const query = outputId ? `?output_id=${outputId}` : ''
+        belanjaList.value = await api.get(`/belanja${query}`)
+    }
+
+    const addBelanja = async (data) => {
+        const result = await api.post('/belanja', data)
+        belanjaList.value.push(result)
+        return result
+    }
+
+    const updateBelanja = async (id, data) => {
+        const result = await api.put(`/belanja/${id}`, data)
+        const idx = belanjaList.value.findIndex(b => b.id === id)
+        if (idx !== -1) belanjaList.value[idx] = result
+        return result
+    }
+
+    const deleteBelanja = async (id) => {
+        await api.delete(`/belanja/${id}`)
+        belanjaList.value = belanjaList.value.filter(b => b.id !== id)
+    }
+
     // Periode
     const fetchPeriode = async (tahunId) => {
         const id = tahunId || selectedTahunId.value
@@ -318,6 +346,11 @@ export const useMonevStore = defineStore('monev', () => {
         await api.delete(`/monitoring/${id}`)
     }
 
+    const saveMonitoringBelanja = async (data) => {
+        const result = await api.post('/monitoring/belanja', data)
+        return result
+    }
+
     // Load semua data untuk tahun yang dipilih
     const loadAllForTahun = async (tahunId) => {
         const id = tahunId || selectedTahunId.value
@@ -339,7 +372,7 @@ export const useMonevStore = defineStore('monev', () => {
     return {
         // State
         tahunList, selectedTahunId, programs, kegiatanList,
-        subKegiatanList, outputList, periodeList, monitoringList,
+        subKegiatanList, outputList, belanjaList, periodeList, monitoringList,
         rekapData, dashboardData, loading,
         // Getters
         selectedTahun, bulanNames,
@@ -351,8 +384,9 @@ export const useMonevStore = defineStore('monev', () => {
         fetchKegiatan, addKegiatan, updateKegiatan, deleteKegiatan,
         fetchSubKegiatan, addSubKegiatan, updateSubKegiatan, deleteSubKegiatan,
         fetchOutput, addOutput, updateOutput, deleteOutput,
+        fetchBelanja, addBelanja, updateBelanja, deleteBelanja,
         fetchPeriode, generatePeriode,
-        fetchMonitoring, fetchRekap, fetchDashboard, saveMonitoring, updateMonitoring, deleteMonitoring,
+        fetchMonitoring, fetchRekap, fetchDashboard, saveMonitoring, updateMonitoring, deleteMonitoring, saveMonitoringBelanja,
         loadAllForTahun
     }
 })

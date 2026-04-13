@@ -9,8 +9,11 @@ router.get("/", verifyToken, async (req, res) => {
     try {
         const { output_id, periode_id } = req.query;
         let query = `
-            SELECT m.*, 
-                   o.nama_output, o.pagu,
+            SELECT m.id, m.output_id, m.periode_id, m.target_fisik, m.realisasi_fisik, m.progress, m.hambatan, m.pendorong, 
+                   o.nama_output,
+                   COALESCE((SELECT SUM(b.pagu) FROM belanja b WHERE b.output_id = o.id), 0) AS pagu,
+                   COALESCE((SELECT SUM(mb.target_keuangan) FROM belanja b JOIN monitoring_belanja mb ON b.id = mb.belanja_id WHERE b.output_id = o.id AND mb.periode_id = m.periode_id), 0) AS target_keuangan,
+                   COALESCE((SELECT SUM(mb.realisasi_keuangan) FROM belanja b JOIN monitoring_belanja mb ON b.id = mb.belanja_id WHERE b.output_id = o.id AND mb.periode_id = m.periode_id), 0) AS realisasi_keuangan,
                    p.bulan, t.tahun
             FROM monitoring m
             LEFT JOIN output_kegiatan o ON m.output_id = o.id
@@ -67,12 +70,12 @@ router.get("/dashboard", verifyToken, async (req, res) => {
                 k.nama_kegiatan,
                 sk.nama_sub_kegiatan,
                 o.nama_output,
-                o.pagu,
+                COALESCE((SELECT SUM(b.pagu) FROM belanja b WHERE b.output_id = o.id), 0) AS pagu,
                 pr.bulan,
                 m.target_fisik,
                 m.realisasi_fisik,
-                m.target_keuangan,
-                m.realisasi_keuangan
+                COALESCE((SELECT SUM(mb.target_keuangan) FROM belanja b JOIN monitoring_belanja mb ON b.id = mb.belanja_id WHERE b.output_id = o.id AND mb.periode_id = pr.id), 0) AS target_keuangan,
+                COALESCE((SELECT SUM(mb.realisasi_keuangan) FROM belanja b JOIN monitoring_belanja mb ON b.id = mb.belanja_id WHERE b.output_id = o.id AND mb.periode_id = pr.id), 0) AS realisasi_keuangan
             FROM monitoring m
             JOIN output_kegiatan o ON m.output_id = o.id
             JOIN sub_kegiatan sk ON o.sub_kegiatan_id = sk.id
@@ -107,9 +110,11 @@ router.get("/rekap", verifyToken, async (req, res) => {
                 pr.id AS program_id, pr.kode_program, pr.nama_program,
                 k.id AS kegiatan_id, k.kode_kegiatan, k.nama_kegiatan,
                 sk.id AS sub_kegiatan_id, sk.kode_sub_kegiatan, sk.nama_sub_kegiatan,
-                o.id AS output_id, o.nama_output, o.pagu,
+                o.id AS output_id, o.kode AS kode_output, o.nama_output,
+                COALESCE((SELECT SUM(b.pagu) FROM belanja b WHERE b.output_id = o.id), 0) AS pagu,
                 m.id AS monitoring_id, m.target_fisik, m.realisasi_fisik,
-                m.target_keuangan, m.realisasi_keuangan,
+                COALESCE((SELECT SUM(mb.target_keuangan) FROM belanja b JOIN monitoring_belanja mb ON b.id = mb.belanja_id WHERE b.output_id = o.id AND mb.periode_id = p.id), 0) AS target_keuangan,
+                COALESCE((SELECT SUM(mb.realisasi_keuangan) FROM belanja b JOIN monitoring_belanja mb ON b.id = mb.belanja_id WHERE b.output_id = o.id AND mb.periode_id = p.id), 0) AS realisasi_keuangan,
                 m.progress, m.hambatan, m.pendorong,
                 p.bulan, p.id AS periode_id
              FROM program pr
@@ -135,7 +140,6 @@ router.post("/", verifyToken, async (req, res) => {
     const {
         output_id, periode_id,
         target_fisik, realisasi_fisik,
-        target_keuangan, realisasi_keuangan,
         progress, hambatan, pendorong
     } = req.body;
 
@@ -161,21 +165,18 @@ router.post("/", verifyToken, async (req, res) => {
         const result = await pool.query(
             `INSERT INTO monitoring 
                 (output_id, periode_id, target_fisik, realisasi_fisik, 
-                 target_keuangan, realisasi_keuangan, progress, hambatan, pendorong)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+                 progress, hambatan, pendorong)
+             VALUES ($1, $2, $3, $4, $5, $6, $7)
              ON CONFLICT (output_id, periode_id)
              DO UPDATE SET
                 target_fisik = EXCLUDED.target_fisik,
                 realisasi_fisik = EXCLUDED.realisasi_fisik,
-                target_keuangan = EXCLUDED.target_keuangan,
-                realisasi_keuangan = EXCLUDED.realisasi_keuangan,
                 progress = EXCLUDED.progress,
                 hambatan = EXCLUDED.hambatan,
                 pendorong = EXCLUDED.pendorong
              RETURNING *`,
             [output_id, periode_id,
                 target_fisik || 0, realisasi_fisik || 0,
-                target_keuangan || 0, realisasi_keuangan || 0,
                 progress, hambatan, pendorong]
         );
 
@@ -190,7 +191,6 @@ router.post("/", verifyToken, async (req, res) => {
 router.put("/:id", verifyToken, async (req, res) => {
     const {
         target_fisik, realisasi_fisik,
-        target_keuangan, realisasi_keuangan,
         progress, hambatan, pendorong
     } = req.body;
 
@@ -198,11 +198,9 @@ router.put("/:id", verifyToken, async (req, res) => {
         const result = await pool.query(
             `UPDATE monitoring SET
                 target_fisik = $1, realisasi_fisik = $2,
-                target_keuangan = $3, realisasi_keuangan = $4,
-                progress = $5, hambatan = $6, pendorong = $7
-             WHERE id = $8 RETURNING *`,
+                progress = $3, hambatan = $4, pendorong = $5
+             WHERE id = $6 RETURNING *`,
             [target_fisik, realisasi_fisik,
-                target_keuangan, realisasi_keuangan,
                 progress, hambatan, pendorong,
                 req.params.id]
         );
@@ -228,6 +226,77 @@ router.delete("/:id", verifyToken, async (req, res) => {
             return res.status(404).json({ message: "Monitoring tidak ditemukan" });
         }
         res.json({ message: "Monitoring berhasil dihapus" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Server error" });
+    }
+});
+
+// GET monitoring_belanja
+router.get("/belanja", verifyToken, async (req, res) => {
+    try {
+        const { belanja_id, periode_id } = req.query;
+        let query = `SELECT * FROM monitoring_belanja`;
+        const conditions = [];
+        const params = [];
+
+        if (belanja_id) {
+            params.push(belanja_id);
+            conditions.push(`belanja_id = $${params.length}`);
+        }
+        if (periode_id) {
+            params.push(periode_id);
+            conditions.push(`periode_id = $${params.length}`);
+        }
+
+        if (conditions.length > 0) {
+            query += " WHERE " + conditions.join(" AND ");
+        }
+
+        const result = await pool.query(query, params);
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Server error" });
+    }
+});
+
+// POST upsert monitoring_belanja
+router.post("/belanja", verifyToken, async (req, res) => {
+    const { belanja_id, periode_id, target_keuangan, realisasi_keuangan } = req.body;
+
+    try {
+        // Check reporting window for non-admin users
+        if (req.user.role !== "admin") {
+            const windowResult = await pool.query(
+                `SELECT * FROM reporting_window ORDER BY id DESC LIMIT 1`
+            );
+            if (windowResult.rows.length === 0) {
+                return res.status(403).json({ message: "Belum ada jadwal pelaporan yang dibuka oleh admin" });
+            }
+            const win = windowResult.rows[0];
+            const now = new Date();
+            const start = new Date(win.start_date);
+            const end = new Date(win.end_date);
+            end.setHours(23, 59, 59, 999);
+            if (now < start || now > end) {
+                return res.status(403).json({ message: "Periode pelaporan sudah ditutup. Hubungi admin untuk membuka kembali." });
+            }
+        }
+
+        const result = await pool.query(
+            `INSERT INTO monitoring_belanja 
+                (belanja_id, periode_id, target_keuangan, realisasi_keuangan)
+             VALUES ($1, $2, $3, $4)
+             ON CONFLICT (belanja_id, periode_id)
+             DO UPDATE SET
+                target_keuangan = EXCLUDED.target_keuangan,
+                realisasi_keuangan = EXCLUDED.realisasi_keuangan
+             RETURNING *`,
+            [belanja_id, periode_id, target_keuangan || 0, realisasi_keuangan || 0]
+        );
+
+        res.status(201).json(result.rows[0]);
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: "Server error" });

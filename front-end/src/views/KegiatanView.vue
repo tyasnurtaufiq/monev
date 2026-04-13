@@ -11,7 +11,7 @@
           <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-3">
             <div>
               <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Data Kegiatan</h1>
-              <p class="text-gray-500 dark:text-gray-400 mt-1">Kelola program, kegiatan, sub kegiatan, dan output</p>
+              <p class="text-gray-500 dark:text-gray-400 mt-1">Kelola program, kegiatan, sub kegiatan, output, dan belanja</p>
             </div>
             <button @click="openAddModal" class="btn-accent flex items-center gap-2 self-start sm:self-auto">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -47,17 +47,24 @@
                 </select>
               </template>
 
-              <template v-if="currentLevel === 'subkegiatan' || currentLevel === 'output'">
+              <template v-if="currentLevel === 'subkegiatan' || currentLevel === 'output' || currentLevel === 'belanja'">
                 <select v-model="filterKegiatanId" @change="onKegiatanFilterChange" class="input-field w-auto">
                   <option value="">Semua Kegiatan</option>
                   <option v-for="k in monevStore.kegiatanList" :key="k.id" :value="k.id">{{ k.nama_kegiatan }}</option>
                 </select>
               </template>
 
-              <template v-if="currentLevel === 'output'">
+              <template v-if="currentLevel === 'output' || currentLevel === 'belanja'">
                 <select v-model="filterSubKegiatanId" @change="onSubKegiatanFilterChange" class="input-field w-auto">
                   <option value="">Semua Sub Kegiatan</option>
                   <option v-for="sk in monevStore.subKegiatanList" :key="sk.id" :value="sk.id">{{ sk.nama_sub_kegiatan }}</option>
+                </select>
+              </template>
+
+              <template v-if="currentLevel === 'belanja'">
+                <select v-model="filterOutputId" @change="onOutputFilterChange" class="input-field w-auto">
+                  <option value="">Semua Output</option>
+                  <option v-for="o in monevStore.outputList" :key="o.id" :value="o.id">{{ o.nama_output }}</option>
                 </select>
               </template>
             </div>
@@ -71,7 +78,7 @@
                 <tr>
                   <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Kode</th>
                   <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Nama</th>
-                  <th v-if="currentLevel === 'output'" class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Pagu</th>
+                  <th v-if="currentLevel === 'belanja'" class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Pagu</th>
                   <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Parent</th>
                   <th class="px-6 py-4 text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
                 </tr>
@@ -87,7 +94,7 @@
                   <td class="px-6 py-4">
                     <p class="font-medium text-gray-900 dark:text-gray-100">{{ item.nama }}</p>
                   </td>
-                  <td v-if="currentLevel === 'output'" class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+                  <td v-if="currentLevel === 'belanja'" class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
                     {{ formatCurrency(item.pagu) }}
                   </td>
                   <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{{ item.parentName || '-' }}</td>
@@ -128,7 +135,7 @@
         <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showModal = false"></div>
         <div class="relative w-full max-w-lg bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden">
           <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
-            <h3 class="text-lg font-bold text-gray-900">
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white">
               {{ editingItem ? 'Edit' : 'Tambah' }} {{ levelLabel }}
             </h3>
             <button @click="showModal = false" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
@@ -141,50 +148,57 @@
           <form @submit.prevent="handleSave" class="p-6 space-y-5">
             <!-- Parent selector -->
             <div v-if="currentLevel === 'kegiatan'">
-              <label class="block text-sm font-medium text-gray-700 mb-1.5">Program <span class="text-red-500">*</span></label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Program <span class="text-red-500">*</span></label>
               <select v-model="form.parent_id" class="input-field" required>
                 <option value="" disabled>Pilih program</option>
                 <option v-for="p in monevStore.programs" :key="p.id" :value="p.id">{{ p.nama_program }}</option>
               </select>
             </div>
             <div v-if="currentLevel === 'subkegiatan'">
-              <label class="block text-sm font-medium text-gray-700 mb-1.5">Kegiatan <span class="text-red-500">*</span></label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Kegiatan <span class="text-red-500">*</span></label>
               <select v-model="form.parent_id" class="input-field" required>
                 <option value="" disabled>Pilih kegiatan</option>
                 <option v-for="k in monevStore.kegiatanList" :key="k.id" :value="k.id">{{ k.nama_kegiatan }}</option>
               </select>
             </div>
             <div v-if="currentLevel === 'output'">
-              <label class="block text-sm font-medium text-gray-700 mb-1.5">Sub Kegiatan <span class="text-red-500">*</span></label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Sub Kegiatan <span class="text-red-500">*</span></label>
               <select v-model="form.parent_id" class="input-field" required>
                 <option value="" disabled>Pilih sub kegiatan</option>
                 <option v-for="sk in monevStore.subKegiatanList" :key="sk.id" :value="sk.id">{{ sk.nama_sub_kegiatan }}</option>
               </select>
             </div>
+            <div v-if="currentLevel === 'belanja'">
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Output <span class="text-red-500">*</span></label>
+              <select v-model="form.parent_id" class="input-field" required>
+                <option value="" disabled>Pilih output</option>
+                <option v-for="o in monevStore.outputList" :key="o.id" :value="o.id">{{ o.nama_output }}</option>
+              </select>
+            </div>
 
             <!-- Kode -->
-            <div v-if="currentLevel !== 'output'">
-              <label class="block text-sm font-medium text-gray-700 mb-1.5">Kode</label>
-              <input v-model="form.kode" type="text" placeholder="Kode..." class="input-field" />
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Kode <span class="text-red-500">*</span></label>
+              <input v-model="form.kode" type="text" placeholder="Kode..." class="input-field" required />
             </div>
 
             <!-- Nama -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1.5">
-                {{ currentLevel === 'output' ? 'Nama Output' : 'Nama' }} <span class="text-red-500">*</span>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                {{ currentLevel === 'output' ? 'Nama Output' : currentLevel === 'belanja' ? 'Nama Belanja' : 'Nama' }} <span class="text-red-500">*</span>
               </label>
               <input v-model="form.nama" type="text" placeholder="Nama..." class="input-field" required />
             </div>
 
-            <!-- Pagu (output only) -->
-            <div v-if="currentLevel === 'output'">
-              <label class="block text-sm font-medium text-gray-700 mb-1.5">Pagu (Rp) <span class="text-red-500">*</span></label>
+            <!-- Pagu (belanja only) -->
+            <div v-if="currentLevel === 'belanja'">
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Pagu (Rp) <span class="text-red-500">*</span></label>
               <input v-model="form.pagu" type="number" step="0.01" placeholder="0" class="input-field" required />
             </div>
 
             <!-- User assignment (output only) -->
             <div v-if="currentLevel === 'output'">
-              <label class="block text-sm font-medium text-gray-700 mb-1.5">Ditugaskan ke <span class="text-red-500">*</span></label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Ditugaskan ke <span class="text-red-500">*</span></label>
               <select v-model="form.user_id" class="input-field" required>
                 <option value="" disabled>Pilih user</option>
                 <option v-for="u in usersList" :key="u.id" :value="u.id">{{ u.name }} ({{ u.username }})</option>
@@ -193,7 +207,7 @@
 
             <!-- Tahun (program only) -->
             <div v-if="currentLevel === 'program'">
-              <label class="block text-sm font-medium text-gray-700 mb-1.5">Tahun Anggaran</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Tahun Anggaran</label>
               <select v-model="form.tahun_id" class="input-field">
                 <option v-for="t in monevStore.tahunList" :key="t.id" :value="t.id">{{ t.tahun }}</option>
               </select>
@@ -254,7 +268,8 @@ const levels = [
   { key: 'program', label: 'Program' },
   { key: 'kegiatan', label: 'Kegiatan' },
   { key: 'subkegiatan', label: 'Sub Kegiatan' },
-  { key: 'output', label: 'Output' }
+  { key: 'output', label: 'Output' },
+  { key: 'belanja', label: 'Belanja' }
 ]
 
 const currentLevel = ref('program')
@@ -262,6 +277,7 @@ const selectedTahunId = ref(monevStore.selectedTahunId)
 const filterProgramId = ref('')
 const filterKegiatanId = ref('')
 const filterSubKegiatanId = ref('')
+const filterOutputId = ref('')
 const showModal = ref(false)
 const showDeleteModal = ref(false)
 const editingItem = ref(null)
@@ -300,8 +316,13 @@ const tableData = computed(() => {
       }))
     case 'output':
       return monevStore.outputList.map(o => ({
-        id: o.id, kode: null, nama: o.nama_output, pagu: o.pagu,
+        id: o.id, kode: o.kode || null, nama: o.nama_output,
         parentName: o.user_name ? `${o.nama_sub_kegiatan || '-'} — ${o.user_name}` : (o.nama_sub_kegiatan || '-'), raw: o
+      }))
+    case 'belanja':
+      return monevStore.belanjaList.map(b => ({
+        id: b.id, kode: b.kode || null, nama: b.nama_belanja, pagu: b.pagu,
+        parentName: b.nama_output || '-', raw: b
       }))
     default:
       return []
@@ -328,6 +349,7 @@ const onFilterChange = async () => {
 
 const onKegiatanFilterChange = async () => {
   filterSubKegiatanId.value = ''
+  filterOutputId.value = ''
   if (filterKegiatanId.value) {
     await monevStore.fetchSubKegiatan(filterKegiatanId.value)
   } else {
@@ -336,10 +358,22 @@ const onKegiatanFilterChange = async () => {
   if (currentLevel.value === 'output') {
     await monevStore.fetchOutput(filterSubKegiatanId.value || undefined)
   }
+  if (currentLevel.value === 'belanja') {
+    await monevStore.fetchOutput(filterSubKegiatanId.value || undefined)
+    await monevStore.fetchBelanja(filterOutputId.value || undefined)
+  }
 }
 
 const onSubKegiatanFilterChange = async () => {
+  filterOutputId.value = ''
   await monevStore.fetchOutput(filterSubKegiatanId.value || undefined)
+  if (currentLevel.value === 'belanja') {
+    await monevStore.fetchBelanja(filterOutputId.value || undefined)
+  }
+}
+
+const onOutputFilterChange = async () => {
+  await monevStore.fetchBelanja(filterOutputId.value || undefined)
 }
 
 const loadCurrentLevel = async () => {
@@ -366,6 +400,22 @@ const loadCurrentLevel = async () => {
       }
       await monevStore.fetchOutput(filterSubKegiatanId.value || undefined)
       break
+    case 'belanja':
+      // Load parent data for filters if needed
+      if (monevStore.programs.length === 0) {
+        await monevStore.fetchPrograms(selectedTahunId.value)
+      }
+      if (monevStore.kegiatanList.length === 0 && filterProgramId.value) {
+        await monevStore.fetchKegiatan(filterProgramId.value)
+      }
+      if (monevStore.subKegiatanList.length === 0 && filterKegiatanId.value) {
+        await monevStore.fetchSubKegiatan(filterKegiatanId.value)
+      }
+      if (monevStore.outputList.length === 0 && filterSubKegiatanId.value) {
+        await monevStore.fetchOutput(filterSubKegiatanId.value)
+      }
+      await monevStore.fetchBelanja(filterOutputId.value || undefined)
+      break
   }
 }
 
@@ -373,10 +423,13 @@ watch(currentLevel, loadCurrentLevel)
 
 const openAddModal = () => {
   editingItem.value = null
+  const defaultParent = currentLevel.value === 'belanja' 
+    ? filterOutputId.value || '' 
+    : filterProgramId.value || filterKegiatanId.value || filterSubKegiatanId.value || ''
   form.value = {
     kode: '',
     nama: '',
-    parent_id: filterProgramId.value || filterKegiatanId.value || '',
+    parent_id: defaultParent,
     pagu: '',
     tahun_id: selectedTahunId.value,
     user_id: ''
@@ -388,9 +441,9 @@ const openEditModal = (item) => {
   editingItem.value = item
   const raw = item.raw
   form.value = {
-    kode: item.kode || '',
+    kode: item.kode || raw.kode || raw.kode_program || raw.kode_kegiatan || raw.kode_sub_kegiatan || '',
     nama: item.nama || '',
-    parent_id: raw.program_id || raw.kegiatan_id || raw.sub_kegiatan_id || '',
+    parent_id: raw.program_id || raw.kegiatan_id || raw.sub_kegiatan_id || raw.output_id || '',
     pagu: raw.pagu || '',
     tahun_id: raw.tahun_id || selectedTahunId.value,
     user_id: raw.user_id || ''
@@ -451,16 +504,33 @@ const handleSave = async () => {
         if (editingItem.value) {
           await monevStore.updateOutput(editingItem.value.id, {
             sub_kegiatan_id: form.value.parent_id,
+            kode: form.value.kode,
             nama_output: form.value.nama,
-            pagu: parseFloat(form.value.pagu),
             user_id: form.value.user_id
           })
         } else {
           await monevStore.addOutput({
             sub_kegiatan_id: form.value.parent_id,
+            kode: form.value.kode,
             nama_output: form.value.nama,
-            pagu: parseFloat(form.value.pagu),
             user_id: form.value.user_id
+          })
+        }
+        break
+      case 'belanja':
+        if (editingItem.value) {
+          await monevStore.updateBelanja(editingItem.value.id, {
+            output_id: form.value.parent_id,
+            kode: form.value.kode,
+            nama_belanja: form.value.nama,
+            pagu: parseFloat(form.value.pagu)
+          })
+        } else {
+          await monevStore.addBelanja({
+            output_id: form.value.parent_id,
+            kode: form.value.kode,
+            nama_belanja: form.value.nama,
+            pagu: parseFloat(form.value.pagu)
           })
         }
         break
@@ -487,6 +557,7 @@ const handleDelete = async () => {
       case 'kegiatan': await monevStore.deleteKegiatan(deletingItem.value.id); break
       case 'subkegiatan': await monevStore.deleteSubKegiatan(deletingItem.value.id); break
       case 'output': await monevStore.deleteOutput(deletingItem.value.id); break
+      case 'belanja': await monevStore.deleteBelanja(deletingItem.value.id); break
     }
     showDeleteModal.value = false
     deletingItem.value = null

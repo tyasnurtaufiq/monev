@@ -5,27 +5,25 @@ const isAdmin = require("../middleware/roleMiddleware");
 
 const router = express.Router();
 
-// GET semua output (filter by sub_kegiatan_id + user ownership)
+// GET semua belanja (filter by output_id + user ownership)
 router.get("/", verifyToken, async (req, res) => {
     try {
-        const { sub_kegiatan_id } = req.query;
+        const { output_id } = req.query;
         let query = `
-            SELECT o.*, 
-                   COALESCE((SELECT SUM(b.pagu) FROM belanja b WHERE b.output_id = o.id), 0) AS pagu,
-                   sk.nama_sub_kegiatan, sk.kode_sub_kegiatan, u.name as user_name, u.username as user_username
-            FROM output_kegiatan o
-            LEFT JOIN sub_kegiatan sk ON o.sub_kegiatan_id = sk.id
+            SELECT b.*, o.nama_output, o.sub_kegiatan_id, u.name as user_name
+            FROM belanja b
+            LEFT JOIN output_kegiatan o ON b.output_id = o.id
             LEFT JOIN users u ON o.user_id = u.id
         `;
         const conditions = [];
         const params = [];
 
-        if (sub_kegiatan_id) {
-            params.push(sub_kegiatan_id);
-            conditions.push(`o.sub_kegiatan_id = $${params.length}`);
+        if (output_id) {
+            params.push(output_id);
+            conditions.push(`b.output_id = $${params.length}`);
         }
 
-        // Non-admin hanya lihat output miliknya
+        // Non-admin hanya lihat belanja dari output miliknya
         if (req.user.role !== "admin") {
             params.push(req.user.id);
             conditions.push(`o.user_id = $${params.length}`);
@@ -35,7 +33,7 @@ router.get("/", verifyToken, async (req, res) => {
             query += " WHERE " + conditions.join(" AND ");
         }
 
-        query += " ORDER BY o.id";
+        query += " ORDER BY b.id";
 
         const result = await pool.query(query, params);
         res.json(result.rows);
@@ -45,23 +43,29 @@ router.get("/", verifyToken, async (req, res) => {
     }
 });
 
-// GET output by id (with ownership check)
+// GET belanja by id
 router.get("/:id", verifyToken, async (req, res) => {
     try {
         const result = await pool.query(
-            `SELECT o.*, sk.nama_sub_kegiatan, sk.kode_sub_kegiatan
-             FROM output_kegiatan o
-             LEFT JOIN sub_kegiatan sk ON o.sub_kegiatan_id = sk.id
-             WHERE o.id = $1`,
+            `SELECT b.*, o.nama_output
+             FROM belanja b
+             LEFT JOIN output_kegiatan o ON b.output_id = o.id
+             WHERE b.id = $1`,
             [req.params.id]
         );
         if (result.rows.length === 0) {
-            return res.status(404).json({ message: "Output tidak ditemukan" });
+            return res.status(404).json({ message: "Belanja tidak ditemukan" });
         }
 
-        // Non-admin hanya bisa lihat output miliknya
-        if (req.user.role !== "admin" && result.rows[0].user_id !== req.user.id) {
-            return res.status(403).json({ message: "Akses ditolak. Anda tidak memiliki output ini." });
+        // Non-admin check ownership via output
+        if (req.user.role !== "admin") {
+            const output = await pool.query(
+                "SELECT user_id FROM output_kegiatan WHERE id = $1",
+                [result.rows[0].output_id]
+            );
+            if (output.rows.length > 0 && output.rows[0].user_id !== req.user.id) {
+                return res.status(403).json({ message: "Akses ditolak." });
+            }
         }
 
         res.json(result.rows[0]);
@@ -71,19 +75,15 @@ router.get("/:id", verifyToken, async (req, res) => {
     }
 });
 
-// POST tambah output (Admin only, user_id wajib dari body)
+// POST tambah belanja (Admin only)
 router.post("/", verifyToken, isAdmin, async (req, res) => {
-    const { sub_kegiatan_id, nama_output, kode, user_id } = req.body;
-
-    if (!user_id) {
-        return res.status(400).json({ message: "User wajib dipilih" });
-    }
+    const { output_id, nama_belanja, kode, pagu } = req.body;
 
     try {
         const result = await pool.query(
-            `INSERT INTO output_kegiatan (sub_kegiatan_id, nama_output, kode, user_id)
+            `INSERT INTO belanja (output_id, nama_belanja, kode, pagu)
              VALUES ($1, $2, $3, $4) RETURNING *`,
-            [sub_kegiatan_id, nama_output, kode, user_id]
+            [output_id, nama_belanja, kode, pagu || 0]
         );
         res.status(201).json(result.rows[0]);
     } catch (err) {
@@ -92,22 +92,22 @@ router.post("/", verifyToken, isAdmin, async (req, res) => {
     }
 });
 
-// PUT update output (Admin only)
+// PUT update belanja (Admin only)
 router.put("/:id", verifyToken, isAdmin, async (req, res) => {
-    const { sub_kegiatan_id, nama_output, kode, user_id } = req.body;
+    const { output_id, nama_belanja, kode, pagu } = req.body;
     try {
         const existing = await pool.query(
-            "SELECT * FROM output_kegiatan WHERE id = $1",
+            "SELECT * FROM belanja WHERE id = $1",
             [req.params.id]
         );
         if (existing.rows.length === 0) {
-            return res.status(404).json({ message: "Output tidak ditemukan" });
+            return res.status(404).json({ message: "Belanja tidak ditemukan" });
         }
 
         const result = await pool.query(
-            `UPDATE output_kegiatan SET sub_kegiatan_id = $1, nama_output = $2, kode = $3, user_id = $4
+            `UPDATE belanja SET output_id = $1, nama_belanja = $2, kode = $3, pagu = $4
              WHERE id = $5 RETURNING *`,
-            [sub_kegiatan_id, nama_output, kode, user_id, req.params.id]
+            [output_id, nama_belanja, kode, pagu || 0, req.params.id]
         );
         res.json(result.rows[0]);
     } catch (err) {
@@ -116,22 +116,22 @@ router.put("/:id", verifyToken, isAdmin, async (req, res) => {
     }
 });
 
-// DELETE output (Admin only)
+// DELETE belanja (Admin only)
 router.delete("/:id", verifyToken, isAdmin, async (req, res) => {
     try {
         const existing = await pool.query(
-            "SELECT * FROM output_kegiatan WHERE id = $1",
+            "SELECT * FROM belanja WHERE id = $1",
             [req.params.id]
         );
         if (existing.rows.length === 0) {
-            return res.status(404).json({ message: "Output tidak ditemukan" });
+            return res.status(404).json({ message: "Belanja tidak ditemukan" });
         }
 
         await pool.query(
-            "DELETE FROM output_kegiatan WHERE id = $1",
+            "DELETE FROM belanja WHERE id = $1",
             [req.params.id]
         );
-        res.json({ message: "Output berhasil dihapus" });
+        res.json({ message: "Belanja berhasil dihapus" });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: "Server error" });

@@ -15,6 +15,7 @@ app.use("/api/program", require("./routes/program"));
 app.use("/api/kegiatan", require("./routes/kegiatan"));
 app.use("/api/subkegiatan", require("./routes/subkegiatan"));
 app.use("/api/output", require("./routes/output"));
+app.use("/api/belanja", require("./routes/belanja"));
 app.use("/api/periode", require("./routes/periode"));
 app.use("/api/monitoring", require("./routes/monitoring"));
 app.use("/api/events", require("./routes/events"));
